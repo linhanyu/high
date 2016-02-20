@@ -1,0 +1,124 @@
+#include <algorithm>   
+#include <iostream>
+#include <memory>
+#include <list>
+#include <queue>
+#include <set>
+
+#define Infinity -1
+
+using namespace std;
+
+//存edge，weight的node
+struct E_Set_Node{
+    int time;
+    int To;
+    E_Set_Node(int T,int ti):time(ti),To(T){};
+   
+};
+//包含一个edge集，known标识，和距离信息
+struct Graph_Node{
+    list<E_Set_Node> Set_E;
+    bool known=false;
+    int dis=Infinity;
+    
+    void clean(){
+        Set_E.clear();
+        known = false;
+        dis = Infinity;
+    }
+};
+//重载了比较函数的指针，用于最后结果（tag）的间接排序
+struct pri_Node{
+    Graph_Node * gn;
+    
+    pri_Node(Graph_Node & gp){gn = & gp;}
+    
+    bool operator<(pri_Node & pr){
+        return gn->dis<(pr.gn)->dis;
+    }
+};
+
+//图
+Graph_Node Graph[1001];
+
+//优先队列的比较函数
+struct cmp{
+    bool operator() (int a,int b){
+        return Graph[a].dis<Graph[b].dis;
+    }
+};
+//想去的城市的node的指针的集合
+vector<pri_Node> Tag;
+//用于选择下一步的堆
+priority_queue<int,vector<int>,cmp> Heap;
+
+
+//void put_in_heap(E_Set_Node & esn){
+//    Heap.push(esn);
+//}
+
+int main(){
+    int T,S,D;
+    int a,b,time;
+    
+    while (!cin.fail()) {
+        
+        cin>>T>>S>>D;
+        while (T--) {
+            cin>>a>>b>>time;
+            Graph[a].Set_E.push_back(E_Set_Node(b, time));
+            Graph[b].Set_E.push_back(E_Set_Node(a, time));
+        }
+        while (S--) {
+            cin>>a;
+            Graph[0].Set_E.push_back(E_Set_Node(a, 0));
+        }
+        while (D--) {
+            cin>>a;
+            Tag.push_back(pri_Node(Graph[a]));
+        }
+        
+        Graph[0].dis = 0;
+        Heap.push(0);
+        int V;
+//        dij算法
+        while (!Heap.empty()) {
+            V = Heap.top();
+            Heap.pop();
+            while (!Heap.empty() && V == Heap.top()) {
+                Heap.pop();
+            }
+            Graph[V].known = true;
+            for (list<E_Set_Node>::iterator i = Graph[V].Set_E.begin(); i!=Graph[V].Set_E.end(); i++) {
+                if (Graph[(*i).To].known) {
+                    continue;
+                }
+                if (
+                    (Graph[(*i).To].dis == Infinity ||
+                     Graph[V].dis + (*i).time < Graph[(*i).To].dis))
+                {
+                    Graph[(*i).To].dis = Graph[V].dis + (*i).time;
+                    Heap.push((*i).To);
+                }
+               
+            }
+        }
+        
+        int Min=0;
+        for (int i=1; i<Tag.size(); i++) {
+            if (Tag[i]<Tag[Min]) {
+                Min=i;
+            }
+        }
+        
+        cout<<(Tag[Min].gn)->dis<<endl;
+        Tag.clear();
+        for (int i=0; i<1001; i++) {
+            Graph[i].clean();
+        }
+
+        
+    }
+
+}
