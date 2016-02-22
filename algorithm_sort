@@ -1,0 +1,79 @@
+namespace sort {
+#include <algorithm>
+using namespace std;
+    
+#define cutoff 9
+#define NUM (1<<8)
+    template <class T>
+    void Insert_sort(T Array[],int size){
+        T temp;
+        int j;
+        
+        for (int i=1; i<size; i++) {
+            temp = Array[i];
+            for (j=i; j>=0 && temp < Array[j-1]; j--) {
+                Array[j] = Array[j-1];
+            }
+            Array[j] = temp;
+        }
+    }
+    
+    template <class T>
+    T median3(T Array[],int left,int right) {
+        int mid = (left+right) >> 1;
+        
+        if (Array[left] > Array[mid]) {
+            swap(Array[left], Array[mid]);
+        }
+        
+        if (Array[mid] > Array[right]) {
+            swap(Array[mid], Array[right]);
+        }
+        
+        if (Array[left] > Array[mid]) {
+            swap(Array[left], Array[mid]);
+        }
+        
+        swap(Array[mid], Array[right-1]);
+        return Array[right-1];
+    }
+    
+    
+    template <class T>
+    void Q_sort(T Array[],int left,int right){
+        if (left + cutoff < right) {
+            T pivot = median3(Array, left, right);
+            int i,j;
+            i = left;
+            j = right-1;
+            
+            for (; ; ) {
+                while (Array[++i] < pivot);
+                while (Array[--j] > pivot);
+                
+                if (i<j) {
+                    swap(Array[i], Array[j]);
+                    
+                }else{
+                    break;
+                }
+                
+            }
+            
+            swap(Array[i], Array[right-1]);
+            
+            Q_sort(Array, left, i-1);
+            Q_sort(Array, i+1, right);
+            
+            
+        }else{
+            Insert_sort(Array+left,right-left+1);
+        }
+    }
+    
+    template <class T>
+    void quick_sort(T a[],int size) {
+        Q_sort(a, 0, size-1);
+    }
+
+}
